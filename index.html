@@ -1,78 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Calculator</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+  <link rel="stylesheet" href=" https://unpkg.com/buefy/dist/buefy.min.css">
+  <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
 </head>
+
 <body>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-   
-    <div class="container">
-        <div class="row" style="margin-left: 350px;margin-top: 100px;"> 
-            <div class="card">
-                <br>
-                <br>
-                <h1 class="card-title" style="margin-left: 20px;color: aquamarine;">Booking form</h1>
-    <form class="card-body" >
 
-        <div class="form-group">
-            <label for="birthday">Choose a Date:</label>
-            <input type="date" id="birthday" name="birthday">
-        </div>
-        <div class="form-group">
-          <label for="exampleFormControlSelect1">Choose Location:</label>
-          <select>
-            <option>Sunday Park</option>
-            <option>Ahera Forest Farm</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="exampleFormControlSelect2">Select Menu:</label>
-          <select>
-            <option>Brunch</option>
-            <option>Barbecue</option>
-            <option>I will bring my own food</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="exampleFormControlTextarea1">Drinks:</label>
-          <input type="text" id ="drink" > type of drink<br>
-          <input type="number" id = "budget" > budget per item<br>
-          <input type="number" id = "quantity" > quantity <br>
-         
-        </div>
-        <div class="form-group">
-            <label for="exampleFormControlSelect2">Other Items:</label>
-            <select>
-              <option>Photobooth</option>
-              <option>Cookies</option>
-             
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="exampleFormControlSelect2">Cakes:</label>
-            <select>
-              <option>Small</option>
-              <option>Medium</option>
-              <option>Large</option>
-            </select>
-          </div>
+  <div id="app" v-cloak>
+    <b-loading :is-full-page="isFullPage" v-model="isLoading" :can-cancel="true"></b-loading>
+    <section class="container" v-show="!isLoading">
+      <div style="margin:0 auto; width: 600px; max-width: 90vw;">
+        <h1 class="title" style="margin-bottom:5rem;margin-top:2rem">Booking Calculator</h1>
+        <b-field label="Choose a date">
+          <b-datepicker v-model="selected" :show-week-number="showWeekNumber" :locale="locale"
+            placeholder="Click to select..." icon="calendar-today" trap-focus>
+          </b-datepicker>
+        </b-field>
+        <b-field label="Choose a location">
+          <b-select placeholder="Select a location" required v-model="location_price">
+            <option v-for="location of booking.visit.location_budget" :key="location.id" :value="location.price">
+              {{location.name}}</option>
+          </b-select>
+        </b-field>
 
-   <div class="form-group">
-          <label for="exampleFormControlTextarea1">how many people are you:</label>
-          <input type="number" id = "people" > People <br>
-         
+        <b-field label="How many people are you?">
+          <b-numberinput v-model="people_size" min="1" controls-position="compact"></b-numberinput>
+        </b-field>
+
+
+
+        <b-field label="Select menu">
+          <b-select v-model="menu_price">
+            <option :value="menu.price" v-for="menu of booking.visit.food" :key="menu.id">{{menu.name}}</option>
+          </b-select>
+        </b-field>
+
+        <b-field label="Drinks">
+          <b-input placeholder="Type of drink" maxlength="30"></b-input>
+        </b-field>
+
+        <b-field label="Budget per item">
+          <b-input v-model="drink_price" placeholder="Budget per item" type="number"></b-input>
+        </b-field>
+
+        <b-field label="Quantity">
+          <b-numberinput v-model="drink_qty" min="1" controls-position="compact"></b-numberinput>
+        </b-field>
+
+
+        <b-field label="Other items">
+          <b-select required v-model="other_item_price">
+            <option :value="other.price" v-for="other in booking.visit.other_informations">{{other.name}}</option>
+          </b-select>
+        </b-field>
+
+        <b-field label="Cakes">
+          <b-select placeholder="" required v-model="cake_price">
+            <option :value="cake.price" v-for="cake in booking.visit.cake">{{cake.size}}</option>
+          </b-select>
+        </b-field>
+
+        <b-field label="Any additional info?">
+          <b-input maxlength="200" type="textarea"></b-input>
+        </b-field>
+
+
+
+
+        <b-field>
+          <h3 class="title" style="margin-top:5rem; margin-bottom:3rem">Total: {{getTotal}} RF</h3>
+        </b-field>
+        <div class="buttons">
+          <b-button type="is-primary" expanded @click="calculate">Submit</b-button>
         </div>
-   </form>
-    </div>
-</div>
-</div>
+      </div>
+
+
+
+    </section>
+  </div>
+
+  <script src="https://unpkg.com/vue"></script>
+  <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+  <script src="https://unpkg.com/vue-select@latest"></script>
+
+  <script src="app.js"></script>
 </body>
+
 </html>
